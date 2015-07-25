@@ -7,7 +7,7 @@ require.config({
 
 require([
     'game'
-], function(game){
-    let gameInstance = game();
+], function(Game){
+    let gameInstance = new Game();
     gameInstance.initialize();
 });

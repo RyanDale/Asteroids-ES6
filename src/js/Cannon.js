@@ -1,4 +1,5 @@
 import Rectangle from 'Rectangle';
+import gameState from 'gameState';
 
 var cannon_tex = new Image();
 cannon_tex.src = "http://i.imgur.com/VETLA6c.png";//"cannon.png";
@@ -50,7 +51,7 @@ export default class Cannon {
             collisionAsteroid.destroyAsteroid();
             this.y = -100;
             this.setCol(true);
-            gameObject.score += 100;
+            gameState.score += 100;
         }
     }
 }
