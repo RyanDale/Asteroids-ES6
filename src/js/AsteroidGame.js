@@ -19,16 +19,7 @@ let backgroundTex = new GameImage('http://i.imgur.com/31uPjb0.png').getImage(),
     shipTex = new GameImage('http://i.imgur.com/DxukQzY.png').getImage(),
     cannonTex = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
     primaryBackground = new GameImage('http://i.imgur.com/CVcWgas.png').getImage(),
-    parallaxBackground = new GameImage('http://i.imgur.com/REMZBAf.png').getImage(),
-    asteroidTex = new GameImage('http://i.imgur.com/Sm5IM46.png', () => {
-        for (var i = 0; i < 10; i++) {
-            if (i < 5) {
-                asteroids.push(new Asteroid(canvas.width, Math.floor(Math.random() * canvas.height)));
-            } else {
-                asteroids.push(new Asteroid((3 * canvas.width) / 2 + Math.floor(Math.random() * (canvas.width / 2)), Math.floor(Math.random() * canvas.height)));
-            }
-        }
-    }).getImage();
+    parallaxBackground = new GameImage('http://i.imgur.com/REMZBAf.png').getImage();
 
 const _DRAW = new WeakMap(),
     _UPDATE = new WeakMap(),
@@ -45,6 +36,14 @@ let shipHit = 20,
 
 export default class AsteroidGame {
     constructor() {
+        _.times(10, (index) => {
+            if (index < 5) {
+                asteroids.push(new Asteroid(canvas.width, Math.floor(Math.random() * canvas.height)));
+            } else {
+                asteroids.push(new Asteroid((3 * canvas.width) / 2 + Math.floor(Math.random() * (canvas.width / 2)), Math.floor(Math.random() * canvas.height)));
+            }
+        });
+
         gameState.score = 0;
         gameState.lives = 3;
 
@@ -171,10 +170,6 @@ export default class AsteroidGame {
             }
         });
 
-        let gameObject = {
-            asteroids: asteroids,
-            score: gameState.score//SCORE.get(this)
-        };
-        _.each(cannons, (cannon) => cannon.update(gameObject));
+        _.each(cannons, (cannon) => cannon.update());
     }
 }
