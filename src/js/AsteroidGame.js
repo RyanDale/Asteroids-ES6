@@ -7,9 +7,9 @@ import Rectangle from 'Rectangle';
 import LifeManager from 'LifeManager';
 import ScoreManager from 'ScoreManager';
 import canvasManager from 'canvasManager';
+import Explosion from 'Explosion';
 
 let backgroundTex = new GameImage('http://i.imgur.com/31uPjb0.png').getImage(),
-    explosionTex = new GameImage('http://i.imgur.com/J7EHN8k.png').getImage(),
     shipTex = new GameImage('http://i.imgur.com/DxukQzY.png').getImage(),
     cannonTex = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
     primaryBackground = new GameImage('http://i.imgur.com/CVcWgas.png').getImage(),
@@ -34,6 +34,7 @@ export default class AsteroidGame {
         this.cannons = [];
         this.canvas = canvasManager('canvas');
         this.context = this.canvas.getContext('2d');
+        this.explosion = null;
 
         gameState.score = 0;
         gameState.lives = 3;
@@ -102,9 +103,11 @@ export default class AsteroidGame {
         this.context.drawImage(primaryBackground, primaryScroll2, 0);
         this.context.drawImage(parallaxBackground, parallaxScroll, 120);
         this.context.drawImage(parallaxBackground, parallaxScroll2, 120);
-        if (shipHit < 20) {
-            this.context.drawImage(explosionTex, 64, SHIP_Y.get(this));
+
+        if (this.explosion) {
+            this.explosion.draw(this.context);
         }
+
         _.each(this.asteroids, (asteroid) => asteroid.draw(this.context));
         _.each(this.cannons, (cannon) => cannon.draw(this.context));
         this.context.drawImage(shipTex, 64, SHIP_Y.get(this));
@@ -122,10 +125,6 @@ export default class AsteroidGame {
     update() {
         if (gameState.paused) {
             return;
-        }
-
-        if (shipHit != 20) {
-            shipHit++;
         }
 
         if (gameState.lives <= 0) {
@@ -157,6 +156,10 @@ export default class AsteroidGame {
                 this.lifeManager.removeLife();
                 asteroid.destroyAsteroid();
                 shipHit = 0;
+                this.explosion = new Explosion(64, SHIP_Y);
+                setTimeout(()=> {
+                    this.explosion = null;
+                }, 250)
             }
 
             let cannon = _.find(this.cannons, (cannon) => asteroid.checkCollision(cannon));
@@ -171,5 +174,9 @@ export default class AsteroidGame {
         });
 
         _.each(this.cannons, (cannon) => cannon.update());
+
+        if (this.explosion) {
+            this.explosion.setPosition(64, SHIP_Y.get(this));
+        }
     }
 }

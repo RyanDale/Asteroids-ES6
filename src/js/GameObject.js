@@ -1,3 +1,5 @@
+import Rectangle from 'Rectangle';
+
 export default class GameObject {
     constructor(x, y, image) {
         this.x = x;
@@ -12,5 +14,10 @@ export default class GameObject {
 
     checkCollision(gameObject) {
         return this.rect.checkCollision(gameObject.rect);
+    }
+
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
     }
 }

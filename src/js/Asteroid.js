@@ -1,10 +1,11 @@
+import GameObject from 'GameObject';
 import Rectangle from 'Rectangle';
 
 let asteroid_tex = new Image();
 asteroid_tex.src = "http://i.imgur.com/Sm5IM46.png";//asteroid.png";
 
-export default class Asteroid {
-    constructor(x = 0, y = 0) {
+export default class Asteroid extends  GameObject{
+    constructor(x=0, y=0) {
         super(x, y, asteroid_tex);
 
         this.speed = Math.floor(Math.random() * 3) + 1;
