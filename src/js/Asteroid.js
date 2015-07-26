@@ -5,11 +5,7 @@ asteroid_tex.src = "http://i.imgur.com/Sm5IM46.png";//asteroid.png";
 
 export default class Asteroid {
     constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
-        this.w = asteroid_tex.width;
-        this.h = asteroid_tex.height;
-        this.rect = new Rectangle(this.x, this.y, this.w, this.h);
+        super(x, y, asteroid_tex);
 
         this.speed = Math.floor(Math.random() * 3) + 1;
         this.rotation = Math.floor(Math.random() * 360);

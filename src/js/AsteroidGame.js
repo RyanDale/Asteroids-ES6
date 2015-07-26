@@ -160,7 +160,7 @@ export default class AsteroidGame {
                 shipHit = 0;
             }
 
-            let cannon = _.find(cannons, (cannon) => asteroid.rect.checkCollision(cannon.rect));
+            let cannon = _.find(cannons, (cannon) => asteroid.checkCollision(cannon));
 
             if (cannon) {
                 asteroid.destroyAsteroid();
