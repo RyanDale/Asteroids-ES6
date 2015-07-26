@@ -1,10 +1,12 @@
 import Rectangle from 'Rectangle';
 import gameState from 'gameState';
+import canvasManager from 'canvasManager';
 
 var cannon_tex = new Image();
 cannon_tex.src = "http://i.imgur.com/VETLA6c.png";//"cannon.png";
-const COL = new WeakMap();
-const SPEED = new WeakMap();
+const COL = new WeakMap(),
+    SPEED = new WeakMap(),
+    MAX_DISTANCE = canvasManager('canvas').width;
 
 export default class Cannon {
     constructor(x, y) {
@@ -34,24 +36,11 @@ export default class Cannon {
     update(gameObject) {
         this.x += this.getSpeed();
 
-        if (this.x > 1200) {
-            this.x = 1200;
+        if (this.x > MAX_DISTANCE) {
+            this.x = MAX_DISTANCE;
             this.y = -100;
         }
 
         this.rect = new Rectangle(this.x, this.y, cannon_tex.width, cannon_tex.height);
-
-        if (this.getCol()) {
-            return;
-        }
-
-        let collisionAsteroid = _.find(gameObject.asteroids, (asteroid) => this.rect.checkCollision(asteroid.rect));
-
-        if (collisionAsteroid) {
-            collisionAsteroid.destroyAsteroid();
-            this.y = -100;
-            this.setCol(true);
-            gameState.score += 100;
-        }
     }
 }
