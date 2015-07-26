@@ -1,64 +1,58 @@
-import _ from '_';
+import _ from 'lodash';
 import Asteroid from 'Asteroid';
 import Cannon from 'Cannon';
+import GameImage from 'GameImage';
 import gameState from 'gameState';
 import Rectangle from 'Rectangle';
+import LifeManager from 'LifeManager';
+import ScoreManager from 'ScoreManager';
+import canvasManager from 'canvasManager';
 
-var gameOver = false;
-var canvas = document.getElementById("canvas1");
+var canvas = canvasManager('canvas');
 var context = canvas.getContext("2d");
 var asteroids = [],
     cannons = [];
 
-var background_tex = new Image();
-background_tex.src = "http://i.imgur.com/31uPjb0.png";//"background.png";
 
-var explosion_tex = new Image();
-explosion_tex.src = "http://i.imgur.com/J7EHN8k.png";//"explosion.png";
-
-var ship_tex = new Image();
-ship_tex.src = "http://i.imgur.com/DxukQzY.png";//"ship.png";
-
-var cannon_tex = new Image();
-cannon_tex.src = "http://i.imgur.com/VETLA6c.png";//"cannon.png";
-
-var pri_bg = new Image();
-pri_bg.src = "http://i.imgur.com/CVcWgas.png";//"PrimaryBackground.png";
-
-var par_bg = new Image();
-par_bg.src = "http://i.imgur.com/REMZBAf.png";//"ParallaxStars.png";
-
-
-var asteroid_tex = new Image();
-asteroid_tex.src = "http://i.imgur.com/Sm5IM46.png";//asteroid.png";
+let backgroundTex = new GameImage('http://i.imgur.com/31uPjb0.png').getImage(),
+    explosionTex = new GameImage('http://i.imgur.com/J7EHN8k.png').getImage(),
+    shipTex = new GameImage('http://i.imgur.com/DxukQzY.png').getImage(),
+    cannonTex = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
+    primaryBackground = new GameImage('http://i.imgur.com/CVcWgas.png').getImage(),
+    parallaxBackground = new GameImage('http://i.imgur.com/REMZBAf.png').getImage(),
+    asteroidTex = new GameImage('http://i.imgur.com/Sm5IM46.png', () => {
+        for (var i = 0; i < 10; i++) {
+            if (i < 5) {
+                asteroids.push(new Asteroid(canvas.width, Math.floor(Math.random() * canvas.height)));
+            } else {
+                asteroids.push(new Asteroid((3 * canvas.width) / 2 + Math.floor(Math.random() * (canvas.width / 2)), Math.floor(Math.random() * canvas.height)));
+            }
+        }
+    }).getImage();
 
 const _DRAW = new WeakMap(),
     _UPDATE = new WeakMap(),
     SHIP_Y = new WeakMap(),
-    CANNON_DELAY = new WeakMap();
+    CANNON_DELAY = new WeakMap(),
+    GAME_OVER = new WeakMap();
 
-asteroid_tex.onload = function () {
-    for (var i = 0; i < 5; i++) {
-        asteroids[i] = new Asteroid(1200, Math.floor(Math.random() * 720));
-    }
-    for (var i = 0; i < 5; i++) {
-        asteroids[i + 5] = new Asteroid(1500 + Math.floor(Math.random() * 500), Math.floor(Math.random() * 720));
-    }
-};
-
-let ship_hit = 20,
-    pri_scroll = 0,
-    pri_scroll_2 = 1920,
-    par_scroll = 0,
-    par_scroll_2 = 1680,
-    game_reset = 0;
+let shipHit = 20,
+    primaryScroll = 0,
+    primaryScroll2 = 1920,
+    parallaxScroll = 0,
+    parallaxScroll2 = 1680,
+    gameReset = 0;
 
 export default class AsteroidGame {
     constructor() {
         gameState.score = 0;
         gameState.lives = 3;
-        SHIP_Y.set(this, 360 - ship_tex.width / 2);
+
+        /* Initialize private variables */
+        GAME_OVER.set(this, false);
+        SHIP_Y.set(this, 360 - shipTex.width / 2);
         CANNON_DELAY.set(this, 0);
+
         context.fillStyle = "yellow";
         context.font = "bold 64px Arial";
 
@@ -68,6 +62,9 @@ export default class AsteroidGame {
         setInterval(this.update.bind(this), 10);
 
         document.addEventListener('keydown', (event) => {
+            if (this.getGameOver()) {
+                return;
+            }
             if ((event.keyCode == 40 || event.keyCode == 83) && SHIP_Y.get(this) < 536) {
                 SHIP_Y.set(this, SHIP_Y.get(this) + 32);
             }
@@ -78,44 +75,49 @@ export default class AsteroidGame {
             }
         });
         document.addEventListener('keyup', (event) => {
-            if ((event.keyCode == 13 || event.keyCode == 32) && CANNON_DELAY.get(this) > 7 && !gameOver) {
+            if ((event.keyCode == 13 || event.keyCode == 32) && CANNON_DELAY.get(this) > 7 && !this.getGameOver()) {
                 CANNON_DELAY.set(this, 0);
-                cannons[cannons.length] = new Cannon(ship_tex.width + 64, SHIP_Y.get(this) + ship_tex.height / 2 - cannon_tex.height / 2);
+                cannons[cannons.length] = new Cannon(shipTex.width + 64, SHIP_Y.get(this) + shipTex.height / 2 - cannonTex.height / 2);
             }
         });
+
+        this.lifeManager = new LifeManager(3, 10, 10);
+        this.scoreManger = new ScoreManager(0, canvas.width - 10, 60);
     }
 
     getGameOver() {
-        if (gameOver && game_reset > 10) {
+        if (GAME_OVER.get(this) && gameReset > 10) {
             window.clearInterval(_DRAW.get(this));
             window.clearInterval(_UPDATE.get(this));
         }
-        return gameOver;
+        return GAME_OVER.get(this);
     }
 
     draw() {
         if (gameState.paused) {
             return;
         }
-        context.clearRect(0, 0, 1280, 720);
-        context.drawImage(background_tex, 0, 0);
-        context.drawImage(pri_bg, pri_scroll, 0);
-        context.drawImage(pri_bg, pri_scroll_2, 0);
-        context.drawImage(par_bg, par_scroll, 120);
-        context.drawImage(par_bg, par_scroll_2, 120);
-        if (ship_hit < 20) {
-            context.drawImage(explosion_tex, 64, SHIP_Y.get(this));
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(backgroundTex, 0, 0);
+        context.drawImage(primaryBackground, primaryScroll, 0);
+        context.drawImage(primaryBackground, primaryScroll2, 0);
+        context.drawImage(parallaxBackground, parallaxScroll, 120);
+        context.drawImage(parallaxBackground, parallaxScroll2, 120);
+        if (shipHit < 20) {
+            context.drawImage(explosionTex, 64, SHIP_Y.get(this));
         }
         _.each(asteroids, (asteroid) => asteroid.draw(context));
         _.each(cannons, (cannon) => cannon.draw(context));
-        context.drawImage(ship_tex, 64, SHIP_Y.get(this));
-        if (gameOver) {
-            context.fillText('GAMEOVER', 400, 200);
-            context.fillText(`SCORE: ${gameState.score}`, 430, 400);
+        context.drawImage(shipTex, 64, SHIP_Y.get(this));
+        if (GAME_OVER.get(this)) {
+            let gameOverText = 'GAMEOVER',
+                formattedScore = `SCORE: ${gameState.score.toLocaleString()}`;
+            context.fillText(gameOverText, canvas.width / 2 - (context.measureText(gameOverText).width / 2), 200);
+            context.fillText(formattedScore, canvas.width / 2 - (context.measureText(formattedScore).width / 2), 400);
         } else {
-            context.fillText(`SCORE: ${gameState.score}`, 200, 100);
-            context.fillText(`LIVES: ${gameState.lives}`, 750, 100);
+            this.scoreManger.draw(context);
         }
+        this.lifeManager.draw(context);
     }
 
     update() {
@@ -123,38 +125,49 @@ export default class AsteroidGame {
             return;
         }
 
-        if (ship_hit != 20) {
-            ship_hit++;
+        if (shipHit != 20) {
+            shipHit++;
         }
 
         if (gameState.lives <= 0) {
-            game_reset++;
-            gameOver = true;
+            gameReset++;
+            GAME_OVER.set(this, true);
             return;
         }
-        pri_scroll--;
-        pri_scroll_2--;
-        par_scroll -= 2;
-        par_scroll_2 -= 2;
-        if (pri_scroll <= -1920) {
-            pri_scroll = pri_scroll_2 + 1920;
+        primaryScroll--;
+        primaryScroll2--;
+        parallaxScroll -= 2;
+        parallaxScroll2 -= 2;
+        if (primaryScroll <= -canvas.width) {
+            primaryScroll = primaryScroll2 + canvas.width;
         }
-        if (pri_scroll_2 <= -1920) {
-            pri_scroll_2 = pri_scroll + 1920;
+        if (primaryScroll2 <= -canvas.width) {
+            primaryScroll2 = primaryScroll + canvas.width;
         }
-        if (par_scroll <= -1680) {
-            par_scroll = par_scroll_2 + 1680;
+        if (parallaxScroll <= -1680) {
+            parallaxScroll = parallaxScroll2 + 1680;
         }
-        if (par_scroll_2 <= -1680) {
-            par_scroll_2 = par_scroll + 1680;
+        if (parallaxScroll2 <= -1680) {
+            parallaxScroll2 = parallaxScroll + 1680;
         }
         CANNON_DELAY.set(this, CANNON_DELAY.get(this) + 1);
         _.each(asteroids, (asteroid) => {
             asteroid.update();
-            if (new Rectangle(64, SHIP_Y.get(this), ship_tex.width * 3 / 4, ship_tex.height).checkCollision(asteroid.rect)) {
+            if (new Rectangle(64, SHIP_Y.get(this), shipTex.width * 3 / 4, shipTex.height).checkCollision(asteroid.rect)) {
                 gameState.lives--;//LIVES.set(this, LIVES.get(this) - 1);// flash=true;//alert("GAME OVER");
+                this.lifeManager.removeLife();
                 asteroid.destroyAsteroid();
-                ship_hit = 0;
+                shipHit = 0;
+            }
+
+            let cannon = _.find(cannons, (cannon) => asteroid.rect.checkCollision(cannon.rect));
+
+            if (cannon) {
+                asteroid.destroyAsteroid();
+                cannon.y = -100;
+                cannon.setCol(true);
+                gameState.score += 100;
+                this.scoreManger.incrementScore(100);
             }
         });
 
