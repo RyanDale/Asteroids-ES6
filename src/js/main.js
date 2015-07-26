@@ -1,7 +1,7 @@
 'use strict';
 require.config({
     paths: {
-        underscore: 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min'
+        lodash: 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min'
     }
 });
 
