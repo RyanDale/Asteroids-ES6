@@ -8,12 +8,6 @@ import LifeManager from 'LifeManager';
 import ScoreManager from 'ScoreManager';
 import canvasManager from 'canvasManager';
 
-var canvas = canvasManager('canvas');
-var context = canvas.getContext("2d");
-var asteroids = [],
-    cannons = [];
-
-
 let backgroundTex = new GameImage('http://i.imgur.com/31uPjb0.png').getImage(),
     explosionTex = new GameImage('http://i.imgur.com/J7EHN8k.png').getImage(),
     shipTex = new GameImage('http://i.imgur.com/DxukQzY.png').getImage(),
@@ -36,13 +30,10 @@ let shipHit = 20,
 
 export default class AsteroidGame {
     constructor() {
-        _.times(10, (index) => {
-            if (index < 5) {
-                asteroids.push(new Asteroid(canvas.width, Math.floor(Math.random() * canvas.height)));
-            } else {
-                asteroids.push(new Asteroid((3 * canvas.width) / 2 + Math.floor(Math.random() * (canvas.width / 2)), Math.floor(Math.random() * canvas.height)));
-            }
-        });
+        this.asteroids = [];
+        this.cannons = [];
+        this.canvas = canvasManager('canvas');
+        this.context = this.canvas.getContext('2d');
 
         gameState.score = 0;
         gameState.lives = 3;
@@ -52,8 +43,8 @@ export default class AsteroidGame {
         SHIP_Y.set(this, 360 - shipTex.width / 2);
         CANNON_DELAY.set(this, 0);
 
-        context.fillStyle = "yellow";
-        context.font = "bold 64px Arial";
+        this.context.fillStyle = "yellow";
+        this.context.font = "bold 64px Arial";
 
         //_DRAW.set(this, setInterval(this.draw, 10));
         //_UPDATE.set(this, setInterval(this.update, 10));
@@ -76,12 +67,21 @@ export default class AsteroidGame {
         document.addEventListener('keyup', (event) => {
             if ((event.keyCode == 13 || event.keyCode == 32) && CANNON_DELAY.get(this) > 7 && !this.getGameOver()) {
                 CANNON_DELAY.set(this, 0);
-                cannons[cannons.length] = new Cannon(shipTex.width + 64, SHIP_Y.get(this) + shipTex.height / 2 - cannonTex.height / 2);
+                let c = new Cannon(shipTex.width + 64, SHIP_Y.get(this) + shipTex.height / 2 - cannonTex.height / 2);
+                this.cannons.push(c);
             }
         });
 
         this.lifeManager = new LifeManager(3, 10, 10);
-        this.scoreManger = new ScoreManager(0, canvas.width - 10, 60);
+        this.scoreManger = new ScoreManager(0, this.canvas.width - 10, 60);
+
+        _.times(10, (index) => {
+            if (index < 5) {
+                this.asteroids.push(new Asteroid(this.canvas.width, Math.floor(Math.random() * this.canvas.height)));
+            } else {
+                this.asteroids.push(new Asteroid((3 * this.canvas.width) / 2 + Math.floor(Math.random() * (this.canvas.width / 2)), Math.floor(Math.random() * this.canvas.height)));
+            }
+        });
     }
 
     getGameOver() {
@@ -96,27 +96,27 @@ export default class AsteroidGame {
         if (gameState.paused) {
             return;
         }
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(backgroundTex, 0, 0);
-        context.drawImage(primaryBackground, primaryScroll, 0);
-        context.drawImage(primaryBackground, primaryScroll2, 0);
-        context.drawImage(parallaxBackground, parallaxScroll, 120);
-        context.drawImage(parallaxBackground, parallaxScroll2, 120);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.drawImage(backgroundTex, 0, 0);
+        this.context.drawImage(primaryBackground, primaryScroll, 0);
+        this.context.drawImage(primaryBackground, primaryScroll2, 0);
+        this.context.drawImage(parallaxBackground, parallaxScroll, 120);
+        this.context.drawImage(parallaxBackground, parallaxScroll2, 120);
         if (shipHit < 20) {
-            context.drawImage(explosionTex, 64, SHIP_Y.get(this));
+            this.context.drawImage(explosionTex, 64, SHIP_Y.get(this));
         }
-        _.each(asteroids, (asteroid) => asteroid.draw(context));
-        _.each(cannons, (cannon) => cannon.draw(context));
-        context.drawImage(shipTex, 64, SHIP_Y.get(this));
+        _.each(this.asteroids, (asteroid) => asteroid.draw(this.context));
+        _.each(this.cannons, (cannon) => cannon.draw(this.context));
+        this.context.drawImage(shipTex, 64, SHIP_Y.get(this));
         if (GAME_OVER.get(this)) {
             let gameOverText = 'GAMEOVER',
                 formattedScore = `SCORE: ${gameState.score.toLocaleString()}`;
-            context.fillText(gameOverText, canvas.width / 2 - (context.measureText(gameOverText).width / 2), 200);
-            context.fillText(formattedScore, canvas.width / 2 - (context.measureText(formattedScore).width / 2), 400);
+            this.context.fillText(gameOverText, this.canvas.width / 2 - (this.context.measureText(gameOverText).width / 2), 200);
+            this.context.fillText(formattedScore, this.canvas.width / 2 - (this.context.measureText(formattedScore).width / 2), 400);
         } else {
-            this.scoreManger.draw(context);
+            this.scoreManger.draw(this.context);
         }
-        this.lifeManager.draw(context);
+        this.lifeManager.draw(this.context);
     }
 
     update() {
@@ -137,11 +137,11 @@ export default class AsteroidGame {
         primaryScroll2--;
         parallaxScroll -= 2;
         parallaxScroll2 -= 2;
-        if (primaryScroll <= -canvas.width) {
-            primaryScroll = primaryScroll2 + canvas.width;
+        if (primaryScroll <= -this.canvas.width) {
+            primaryScroll = primaryScroll2 + this.canvas.width;
         }
-        if (primaryScroll2 <= -canvas.width) {
-            primaryScroll2 = primaryScroll + canvas.width;
+        if (primaryScroll2 <= -this.canvas.width) {
+            primaryScroll2 = primaryScroll + this.canvas.width;
         }
         if (parallaxScroll <= -1680) {
             parallaxScroll = parallaxScroll2 + 1680;
@@ -150,7 +150,7 @@ export default class AsteroidGame {
             parallaxScroll2 = parallaxScroll + 1680;
         }
         CANNON_DELAY.set(this, CANNON_DELAY.get(this) + 1);
-        _.each(asteroids, (asteroid) => {
+        _.each(this.asteroids, (asteroid) => {
             asteroid.update();
             if (new Rectangle(64, SHIP_Y.get(this), shipTex.width * 3 / 4, shipTex.height).checkCollision(asteroid.rect)) {
                 gameState.lives--;//LIVES.set(this, LIVES.get(this) - 1);// flash=true;//alert("GAME OVER");
@@ -159,7 +159,7 @@ export default class AsteroidGame {
                 shipHit = 0;
             }
 
-            let cannon = _.find(cannons, (cannon) => asteroid.checkCollision(cannon));
+            let cannon = _.find(this.cannons, (cannon) => asteroid.checkCollision(cannon));
 
             if (cannon) {
                 asteroid.destroyAsteroid();
@@ -170,6 +170,6 @@ export default class AsteroidGame {
             }
         });
 
-        _.each(cannons, (cannon) => cannon.update());
+        _.each(this.cannons, (cannon) => cannon.update());
     }
 }
