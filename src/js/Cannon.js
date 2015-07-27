@@ -2,18 +2,21 @@ import Rectangle from 'Rectangle';
 import gameState from 'gameState';
 import canvasManager from 'canvasManager';
 import GameObject from 'GameObject';
+import GameImage from 'GameImage';
 
-var cannon_tex = new Image();
-cannon_tex.src = "http://i.imgur.com/VETLA6c.png";//"cannon.png";
-const COL = new WeakMap(),
+const cannonSprite = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
+    COL = new WeakMap(),
     SPEED = new WeakMap(),
     MAX_DISTANCE = canvasManager('canvas').width;
 
+let cannons = [];
+
 export default class Cannon extends GameObject {
     constructor(x, y) {
-        super(x, y, cannon_tex);
+        super(x, y, cannonSprite);
         SPEED.set(this, Math.floor(Math.random() * 2) + 5);
         COL.set(this, false);
+        cannons.push(this);
     }
 
     getCol() {
@@ -32,10 +35,12 @@ export default class Cannon extends GameObject {
         this.x += this.getSpeed();
 
         if (this.x > MAX_DISTANCE) {
-            this.x = MAX_DISTANCE;
-            this.y = -100;
+            this.setPosition(MAX_DISTANCE, -100);
+        } else {
+            this.setPosition(this.x, this.y);
         }
-
-        this.rect = new Rectangle(this.x, this.y, cannon_tex.width, cannon_tex.height);
+    }
+    static getCannons() {
+        return cannons;
     }
 }
