@@ -2,10 +2,8 @@ import Rectangle from 'Rectangle';
 
 export default class GameObject {
     constructor(x, y, image) {
-        this.x = x;
-        this.y = y;
         this.image = image;
-        this.rect = new Rectangle(this.x, this.y, this.image.width, this.image.height);
+        this.setPosition(x, y);
     }
 
     draw(context) {
@@ -19,5 +17,10 @@ export default class GameObject {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
+        this.updateRect();
+    }
+
+    updateRect() {
+        this.rect = new Rectangle(this.x, this.y, this.image.width, this.image.height);
     }
 }
