@@ -1,28 +1,28 @@
 import GameObject from 'GameObject';
 import Rectangle from 'Rectangle';
+import GameImage from 'GameImage';
+import canvasManager from 'canvasManager';
 
-let asteroid_tex = new Image();
-asteroid_tex.src = "http://i.imgur.com/Sm5IM46.png";//asteroid.png";
+const asteroidSprite = new GameImage('http://i.imgur.com/Sm5IM46.png').getImage();
 
-export default class Asteroid extends  GameObject{
-    constructor(x=0, y=0) {
-        super(x, y, asteroid_tex);
-
+export default class Asteroid extends GameObject {
+    constructor(x = 0, y = 0) {
+        super(x, y, asteroidSprite);
         this.speed = Math.floor(Math.random() * 3) + 1;
         this.rotation = Math.floor(Math.random() * 360);
     }
 
     //Draws the Asteroid to the screen.
     draw(context) {
-        let widthHalf = Math.floor(asteroid_tex.width / 2),
-            heightHalf = Math.floor(asteroid_tex.height / 2);
+        let widthHalf = Math.floor(asteroidSprite.width / 2),
+            heightHalf = Math.floor(asteroidSprite.height / 2);
 
         context.save();
 
         context.translate(this.x, this.y);
         context.translate(widthHalf, heightHalf);
         context.rotate(( Math.PI / 180 ) * this.rotation);
-        context.drawImage(asteroid_tex, -widthHalf, -heightHalf);
+        context.drawImage(asteroidSprite, -widthHalf, -heightHalf);
         context.restore();
     }
 
@@ -32,16 +32,13 @@ export default class Asteroid extends  GameObject{
         if (this.rotation >= 360) {
             this.rotation = 0;
         }
-        this.x -= this.speed;
-        if (this.x < -asteroid_tex.width / 2) {
+        this.setPosition(this.x - this.speed, this.y);
+        if (this.x < -asteroidSprite.width / 2) {
             this.destroyAsteroid();
         }
-        this.rect = new Rectangle(this.x, this.y, this.w, this.h);
     }
 
     destroyAsteroid() {
-        this.x = 1200 + asteroid_tex.width / 2;
-        this.y = Math.floor(Math.random() * (720 - asteroid_tex.height));
-        this.rect = new Rectangle(this.x, this.y, this.w, this.h);
+        this.setPosition(canvasManager('canvas').width + asteroidSprite.width / 2, Math.floor(Math.random() * (canvasManager('canvas').height - asteroidSprite.height)));
     }
 }
