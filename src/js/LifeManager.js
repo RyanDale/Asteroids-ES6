@@ -1,6 +1,5 @@
 import GameImage from 'GameImage';
 
-
 const LIVES = new WeakMap(),
     LARGE_LIFE_SPRITE = new GameImage('http://i.imgur.com/JNfxzXr.png').getImage(),
     LIFE_SPRITE = new GameImage('http://i.imgur.com/fEONITO.png').getImage();

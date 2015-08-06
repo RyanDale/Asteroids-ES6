@@ -8,6 +8,6 @@ require.config({
 require([
     'game'
 ], (Game) => {
-    let gameInstance = new Game();
-    gameInstance.initialize();
+    const GAME_INSTANCE = new Game();
+    GAME_INSTANCE.initialize();
 });

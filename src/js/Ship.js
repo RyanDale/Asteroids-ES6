@@ -4,8 +4,8 @@ import gameState from 'gameState';
 import AnimatedSprite from 'AnimatedSprite';
 import Cannon from 'Cannon';
 
-const shipSprite = new GameImage('http://i.imgur.com/sdJ891S.png').getImage(),
-    afterBurnerSprites = [
+const SHIP_SPRITE = new GameImage('http://i.imgur.com/sdJ891S.png').getImage(),
+    AFTER_BURNER_SPRITE = [
         new GameImage('http://i.imgur.com/ndZuxve.png').getImage(),
         new GameImage('http://i.imgur.com/EHKfHxh.png').getImage(),
         new GameImage('http://i.imgur.com/mTd287E.png').getImage(),
@@ -17,8 +17,8 @@ const CANNON_DELAY = new WeakMap();
 
 export default class Ship extends GameObject {
     constructor(x, y) {
-        super(x, y, shipSprite);
-        this.afterBurners = new AnimatedSprite(afterBurnerSprites, 30);
+        super(x, y, SHIP_SPRITE);
+        this.afterBurners = new AnimatedSprite(AFTER_BURNER_SPRITE, 30);
 
         CANNON_DELAY.set(this, 0);
 

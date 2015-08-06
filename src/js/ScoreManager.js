@@ -10,14 +10,17 @@ export default class ScoreManager {
     setScore(score) {
         SCORE.set(this, score);
     }
+
     incrementScore(amount) {
         this.setScore(this.getScore() + amount);
     }
+
     getScore() {
         return SCORE.get(this);
     }
+
     draw(context) {
-        let formattedScore = this.getScore().toLocaleString();
-        context.fillText(formattedScore, this.xPosition - context.measureText(formattedScore).width, this.yPosition);
+        const FORMATTED_SCORE = this.getScore().toLocaleString();
+        context.fillText(FORMATTED_SCORE, this.xPosition - context.measureText(FORMATTED_SCORE).width, this.yPosition);
     }
 }

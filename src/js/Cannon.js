@@ -4,7 +4,7 @@ import canvasManager from 'canvasManager';
 import GameObject from 'GameObject';
 import GameImage from 'GameImage';
 
-const cannonSprite = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
+const CANNON_SPRITE = new GameImage('http://i.imgur.com/VETLA6c.png').getImage(),
     COL = new WeakMap(),
     SPEED = new WeakMap(),
     MAX_DISTANCE = canvasManager('canvas').width;
@@ -13,7 +13,7 @@ let cannons = [];
 
 export default class Cannon extends GameObject {
     constructor(x, y) {
-        super(x, y, cannonSprite);
+        super(x, y, CANNON_SPRITE);
         SPEED.set(this, Math.floor(Math.random() * 2) + 5);
         COL.set(this, false);
         cannons.push(this);

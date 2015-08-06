@@ -7,11 +7,11 @@ export default class AnimatedSprite {
         this.imageSet = imageSet;
         INDEX.set(this, 0);
         setInterval(() => {
-            let currentIndex = INDEX.get(this);
-            if (currentIndex + 1 === this.imageSet.length) {
+            const CURRENT_INDEX = INDEX.get(this);
+            if (CURRENT_INDEX + 1 === this.imageSet.length) {
                 INDEX.set(this, 0);
             } else {
-                INDEX.set(this, currentIndex + 1)
+                INDEX.set(this, CURRENT_INDEX + 1)
             }
         }, duration);
     }
