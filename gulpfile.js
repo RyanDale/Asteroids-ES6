@@ -35,10 +35,12 @@ gulp.task('build-app', function () {
     return gulp.src([
         paths.dev.js
     ]).pipe(babel({
-        modules: 'amd'
+        modules: 'amd',
+        stage: 0
+
     }))
         //.pipe(concat(paths.dist.js))
-        //.pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest(paths.build.root))
         .pipe(livereload());
 });
