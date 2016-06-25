@@ -12,6 +12,8 @@ ES6 Features Utilized:
 
 -let, const
 
+-Default function parameters
+
 -WeakMaps
 
 -String interpolation
